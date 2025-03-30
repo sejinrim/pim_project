@@ -77,13 +77,13 @@ ostream& operator<<(ostream& os, const Transaction& t)
     }
     else if (t.transactionType == DATA_WRITE)
     {
-        os << "T [Write] [0x" << hex << t.address << "] [" << dec << t.data->fp16ToStr() << "]"
-           << endl;
+        // os << "T [Write] [0x" << hex << t.address << "] [" << dec << t.data->fp16ToStr() << "]" << endl;
+        os << "T [Write] [0x" << hex << t.address << "] [" << dec << t.data->uint32ToStr() << "]" << endl;
     }
     else if (t.transactionType == RETURN_DATA)
     {
-        os << "T [Data] [0x" << hex << t.address << "] [" << dec << t.data->fp16ToStr() << "]"
-           << endl;
+        // os << "T [Data] [0x" << hex << t.address << "] [" << dec << t.data->fp16ToStr() << "]" << endl;
+        os << "T [Data] [0x" << hex << t.address << "] [" << dec << t.data->uint32ToStr() << "]" << endl;
     }
     return os;
 }

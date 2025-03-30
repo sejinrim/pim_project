@@ -113,13 +113,17 @@ enum SchedulingPolicy
 enum PIMMode
 {
     mac_in_bankgroup,
-    mac_in_bank
+    mac_in_bank,
+    bank_level_partitioning,
+    partition_inside_bank,
+    join
 };
 enum PIMPrecision
 {
     FP16,
     INT8,
-    FP32
+    FP32,
+    UINT32 //추가함
 };
 
 enum class dramMode
@@ -439,6 +443,9 @@ class PIMConfiguration
         {
             return FP32;
         }
+        else if (param == "UINT32") {
+            return UINT32;
+        }
         throw invalid_argument("Invalid PIM precision");
     }
 
@@ -454,6 +461,10 @@ class PIMConfiguration
             return 1;
         }
         else if (param == "FP32")
+        {
+            return 4;
+        }
+        else if (param == "UINT32")
         {
             return 4;
         }

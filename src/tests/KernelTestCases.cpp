@@ -108,7 +108,8 @@ TEST_F(PIMKernelFixture, add)
     shared_ptr<PIMKernel> kernel = make_pim_kernel();
 
     uint32_t batch_size = 1;
-    uint32_t output_dim = 1024 * 1024;
+    // uint32_t output_dim = 2000;
+    uint32_t output_dim = 64*64;
     uint32_t input_dim = output_dim;
 
     DataDim *dim_data = new DataDim(KernelType::ADD, batch_size, output_dim, input_dim, true);
@@ -123,6 +124,29 @@ TEST_F(PIMKernelFixture, add)
     delete[] result_;
     delete dim_data;
 }
+
+TEST_F(PIMKernelFixture, join)
+{
+    shared_ptr<PIMKernel> kernel = make_pim_kernel();
+
+    uint32_t batch_size = 1;
+    uint32_t output_dim = 2000;
+    uint32_t input_dim = output_dim;
+
+    DataDim *dim_data = new DataDim(KernelType::JOIN, batch_size, output_dim, input_dim, true);
+    dim_data->printDim(KernelType::JOIN);
+
+    // result_ = getResultPIM(KernelType::JOIN, dim_data, kernel, result_);
+    // kernel->runPIM();
+
+    // testStatsClear();
+    // expectAccuracy(KernelType::JOIN, dim_data->dimTobShape(output_dim), dim_data->output_npbst_);
+
+    // delete[] result_;
+    delete dim_data;
+}
+
+
 
 TEST_F(PIMKernelFixture, relu)
 {

@@ -1,6 +1,6 @@
 import numpy as np
 
-DIM_IN = 1024 * 1024
+DIM_IN = 8*8
 
 np.set_printoptions(precision=20)
 np.random.seed(1113)

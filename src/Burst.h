@@ -256,6 +256,18 @@ union BurstType
         return ss.str();
     }
 
+    string uint32ToStr() const
+    {
+        stringstream ss;
+        ss << "[ ";
+        for (int i = 0; i < 8; i++)
+        {
+            ss << u32Data_[i] << " ";
+        }
+        ss << "]";
+        return ss.str();
+    }
+
     bool fp16Similar(const BurstType& rhs, float epsilon)
     {
         for (int i = 0; i < 16; i++)
@@ -340,6 +352,43 @@ union BurstType
         return ret;
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    //setting the tuples.
+    void setTuple(uint32_t key, uint32_t val)
+    {
+        u32Data_[0] = key;
+        u32Data_[1] = val;
+        for (int i = 2; i < 8; ++i)
+        {
+            u32Data_[i] = 0;
+        }
+    }
+
+    //setting the join tuples.
+    void setJoinTuple(uint32_t key, uint32_t v1, uint32_t v2)
+    {
+        u32Data_[0] = key;
+        u32Data_[1] = v1;
+        u32Data_[2] = v2;
+        for (int i = 3; i < 8; ++i)
+        {
+            u32Data_[i] = 0;
+        }
+    }
+
+    //getting the tuples.
+    std::tuple<uint32_t, uint32_t> getTuple() const
+    {
+        return std::make_tuple(u32Data_[0], u32Data_[1]);
+    }
+
+    //getting the join tuples.
+    std::tuple<uint32_t, uint32_t, uint32_t> getJoinTuple() const
+    {
+        return std::make_tuple(u32Data_[0], u32Data_[1], u32Data_[2]);
+    }
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+
     fp16 fp16Data_[16];
     uint8_t u8Data_[32];
     float fp32Data_[8];
@@ -353,11 +402,13 @@ struct NumpyBurstType
     vector<float> data;
     vector<uint16_t> u16Data;
     vector<unsigned long> bShape;
+    vector<uint32_t> u32Data;
     vector<BurstType> bData;
     enum precision
     {
         FP32,
-        FP16
+        FP16,
+        UINT32
     };
 
     BurstType& getBurst(int x, int y)
@@ -405,7 +456,51 @@ struct NumpyBurstType
                             (u16Data[i + 14]), (u16Data[i + 15]));
             bData.push_back(burst);
         }
+        
+
+        ////////////////////////DEBUG////////////////////////
+        std::cout << "[DEBUG] Loaded FP16 shape: (";
+        for (size_t i = 0; i < shape.size(); ++i) {
+            std::cout << shape[i];
+            if (i != shape.size() - 1) std::cout << ", ";
+        }
+        std::cout << ")" << std::endl;
+
+        for (size_t i = 0; i < bData.size(); ++i) {
+            std::cout << "burst[" << i << "]: " << bData[i].fp16ToStr() << std::endl;
+        }
+
+        // std::cout << "burst[" << 0 << "]: " << bData[0].fp16ToStr() << std::endl;
+        /////////////////////////////////////////////////////
     }
+
+
+    void loadUint32(string filename)
+    {   
+        //// 기존 vector<float> data 대신 새로운 vector<uint32_t> 사용 필요
+        npy::LoadArrayFromNumpy(filename, shape, u32Data);
+        loadTobShape((double)8); //uint32_t 8개가 한 BurstType (32 byte) 크기임
+        for (int i = 0; i < u32Data.size(); i += 8)
+        {
+            BurstType burst(u32Data[i], u32Data[i + 1], u32Data[i + 2], u32Data[i + 3],
+                            u32Data[i + 4], u32Data[i + 5], u32Data[i + 6], u32Data[i + 7]);
+            bData.push_back(burst);
+        }
+
+        ////////////////////////DEBUG////////////////////////
+        std::cout << "[DEBUG] Loaded UINT32 shape: (";
+        for (size_t i = 0; i < shape.size(); ++i) {
+            std::cout << shape[i];
+            if (i != shape.size() - 1) std::cout << ", ";
+        }
+        std::cout << ")" << std::endl;
+
+        for (size_t i = 0; i < bData.size(); ++i) {
+            std::cout << "burst[" << i << "]: " << bData[i].uint32ToStr() << std::endl;
+        }
+        /////////////////////////////////////////////////////
+    }
+
 
     void loadFp16FromFp32(string filename)
     {

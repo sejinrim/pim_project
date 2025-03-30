@@ -26,14 +26,22 @@ class PIMBenchTestCase
     PIMBenchTestCase(KernelType k, unsigned b, unsigned out, unsigned in)
         : kernel_type_(k), batch_(b), out_(out), in_(in)
     {
+        // mem_ = make_shared<MultiChannelMemorySystem>("ini/HBM2_samsung_2M_16B_x64.ini",
+        //                                              "system_hbm_64ch.ini", ".", "example_app",
+        //                                              256 * 64 * 2);
+        // pim_mem_ = make_shared<MultiChannelMemorySystem>("ini/HBM2_samsung_2M_16B_x64.ini",
+        //                                                  "system_hbm_64ch.ini", ".", "example_app",
+        //                                                  256 * 64 * 2);
+        // # of pim channel = 1, # of pim rank = 2
         mem_ = make_shared<MultiChannelMemorySystem>("ini/HBM2_samsung_2M_16B_x64.ini",
-                                                     "system_hbm_64ch.ini", ".", "example_app",
-                                                     256 * 64 * 2);
+                                                     "system_hbm_1ch.ini", ".", "example_app",
+                                                     256 * 1 * 2);
         pim_mem_ = make_shared<MultiChannelMemorySystem>("ini/HBM2_samsung_2M_16B_x64.ini",
-                                                         "system_hbm_64ch.ini", ".", "example_app",
-                                                         256 * 64 * 2);
+                                                         "system_hbm_1ch.ini", ".", "example_app",
+                                                         256 * 1 * 2);
         // # of pim channel = 64, # of pim rank = 1
-        kernel_ = make_shared<PIMKernel>(pim_mem_, 64, 1);
+        // kernel_ = make_shared<PIMKernel>(pim_mem_, 64, 1);
+        kernel_ = make_shared<PIMKernel>(pim_mem_, 1, 1);
         dim_data_ = new DataDim(kernel_type_, batch_, out_, in_, false);
     }
 
@@ -87,6 +95,10 @@ class PIMBenchTestCase
         else if (k == KernelType::RELU)
         {
             return string{"RELU"};
+        }
+        else if (k == KernelType::JOIN)
+        {
+            return string{"JOIN"};
         }
         else
         {

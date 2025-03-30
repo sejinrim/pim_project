@@ -129,11 +129,12 @@ class PIMKernelFixture : public testing::Test
                 break;
             }
             case KernelType::ADD:
+            // case KernelType::JOIN:
             case KernelType::MUL:
             {
-                int input_row0 = 0;
-                int input_row1 = 128;
-                int result_row = 256;
+                int input_row0 = 0;             //첫번째 input은 0번째 row부터 배치
+                int input_row1 = 128;           //두번째 input은 128번째 row부터 배치
+                int result_row = 256;           //결과는 256번째 row부터 배치
                 kernel->preloadNoReplacement(&dim_data->input_npbst_, input_row0, 0);
                 kernel->preloadNoReplacement(&dim_data->input1_npbst_, input_row1, 0);
                 kernel->executeEltwise(dim_data->dimTobShape(dim_data->output_dim_),
@@ -192,6 +193,7 @@ class PIMKernelFixture : public testing::Test
                 }
                 return;
             }
+            case KernelType::JOIN:
             default:
             {
                 ERROR("== Error - Unknown KernelType trying to run");
@@ -202,10 +204,14 @@ class PIMKernelFixture : public testing::Test
 
     shared_ptr<PIMKernel> make_pim_kernel()
     {
+        // shared_ptr<MultiChannelMemorySystem> mem = make_shared<MultiChannelMemorySystem>(
+        //     "ini/HBM2_samsung_2M_16B_x64.ini", "system_hbm_64ch.ini", ".", "example_app",
+        //     256 * 64 * 2);
         shared_ptr<MultiChannelMemorySystem> mem = make_shared<MultiChannelMemorySystem>(
-            "ini/HBM2_samsung_2M_16B_x64.ini", "system_hbm_64ch.ini", ".", "example_app",
-            256 * 64 * 2);
-        int numPIMChan = 64;
+            "ini/HBM2_samsung_2M_16B_x64.ini", "system_hbm_1ch.ini", ".", "example_app",
+            256 * 1 * 2);
+        // int numPIMChan = 64;
+        int numPIMChan = 1;
         int numPIMRank = 1;
         shared_ptr<PIMKernel> kernel = make_shared<PIMKernel>(mem, numPIMChan, numPIMRank);
 

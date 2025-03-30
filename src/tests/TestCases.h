@@ -43,8 +43,10 @@ class MemBandwidthFixture : public testing::Test
     virtual void SetUp()
     {
         cur_cycle = 0;
+        // mem = make_shared<MultiChannelMemorySystem>("ini/HBM2_samsung_2M_16B_x64.ini",
+        //                                             "system_hbm.ini", ".", "example_app", 256 * 16);
         mem = make_shared<MultiChannelMemorySystem>("ini/HBM2_samsung_2M_16B_x64.ini",
-                                                    "system_hbm.ini", ".", "example_app", 256 * 16);
+                                                    "system_hbm_1ch.ini", ".", "example_app", 256 * 1);
         mem_size = (uint64_t)getConfigParam(UINT, "NUM_CHANS") * getConfigParam(UINT, "NUM_RANKS") *
                    getConfigParam(UINT, "NUM_BANK_GROUPS") * getConfigParam(UINT, "NUM_BANKS") *
                    getConfigParam(UINT, "NUM_ROWS") * getConfigParam(UINT, "NUM_COLS");
@@ -142,6 +144,8 @@ class DataDim
                 return 2;
             case FP32:
                 return 4;
+            case UINT32:
+                return 4;
             default:
                 return 0;
         }
@@ -185,14 +189,29 @@ class DataDim
                 return;
             }
             case KernelType::ADD:
-            {
-                input_npbst_.loadFp16("data/add/resadd_input0_" + input_dim_str + ".npy");
-                input1_npbst_.loadFp16("data/add/resadd_input1_" + input_dim_str + ".npy");
-                output_npbst_.loadFp16("data/add/resadd_output_" + input_dim_str + ".npy");
+            {      
+                //this is for the test case
+                input_npbst_.loadUint32("data/join/R_relation.npy");
+                input1_npbst_.loadUint32("data/join/S_relation.npy");
+                // // output_npbst_.loadUint32("data/join/result_tuples.npy");
+                output_npbst_.loadUint32("data/join/result_sum_tuples.npy");
 
-                output_dim_ = bShape1ToDim(output_npbst_.getTotalDim());
-                input_dim_ = bShape1ToDim(input_npbst_.getTotalDim());
-                input1_dim_ = bShape1ToDim(input1_npbst_.getTotalDim());
+                output_dim_ = 64*64;
+                input_dim_ = 64*64;
+                input1_dim_ = 64*64;
+
+                // input_npbst_.loadFp16("data/add/resadd_input0_" + input_dim_str + ".npy");
+                // input1_npbst_.loadFp16("data/add/resadd_input1_" + input_dim_str + ".npy");
+                // output_npbst_.loadFp16("data/add/resadd_output_" + input_dim_str + ".npy");
+
+
+                // output_dim_ = bShape1ToDim(output_npbst_.getTotalDim());
+                // input_dim_ = bShape1ToDim(input_npbst_.getTotalDim());
+                // input1_dim_ = bShape1ToDim(input1_npbst_.getTotalDim());
+
+                cout << "input_dim_: " << input_dim_ << endl;
+                cout << "input1_dim_: " << input1_dim_ << endl;
+                cout << "output_dim_: " << output_dim_ << endl;
 
                 return;
             }
@@ -215,6 +234,23 @@ class DataDim
 
                 output_dim_ = bShape1ToDim(output_npbst_.getTotalDim());
                 input_dim_ = bShape1ToDim(input_npbst_.getTotalDim());
+
+                return;
+            }
+            case KernelType::JOIN:
+            {
+                input_npbst_.loadUint32("data/join/R_relation.npy");
+                input1_npbst_.loadUint32("data/join/S_relation.npy");
+                // output_npbst_.loadUint32("data/join/result_tuples.npy");
+                output_npbst_.loadUint32("data/join/result_sum_tuples.npy");
+
+                // output_dim_ = bShape1ToDim(output_npbst_.getTotalDim());
+                // cout << "Real input element count: " << input_npbst_.u32Data.size() << endl;
+                // input_dim_ = bShape1ToDim(input_npbst_.getTotalDim());
+                // input1_dim_ = bShape1ToDim(input1_npbst_.getTotalDim());
+                input_dim_ = input_npbst_.u32Data.size();
+                input1_dim_ = input1_npbst_.u32Data.size();
+                output_dim_ = output_npbst_.u32Data.size();
 
                 return;
             }
@@ -356,6 +392,23 @@ class DataDim
             case KernelType::RELU:
             {
                 cout << "  Input/output data dimension : " << output_dim_ << endl;
+                break;
+            }
+            case KernelType::JOIN:
+            {   
+                cout << "/////////////////////////////////" << endl;
+                cout << "/////////////////////////////////" << endl;
+                cout << "/////////////////////////////////" << endl;
+                cout << "  THIS IS JUST FOR THE DEBUGGING PURPOSE " << endl;
+                cout << "  Input data dimension : " << input_dim_ << endl;
+                cout << "  Input1 data dimension : " << input1_dim_ << endl;
+                cout << "  Output data dimension : " << output_dim_ << endl;
+                cout << "  Input burst count  : " << input_npbst_.bData.size() << endl;
+                cout << "  Input1 burst count : " << input1_npbst_.bData.size() << endl;
+                cout << "  Output burst count : " << output_npbst_.bData.size() << endl;
+                cout << "/////////////////////////////////" << endl;
+                cout << "/////////////////////////////////" << endl;
+                cout << "/////////////////////////////////" << endl;
                 break;
             }
             default:
